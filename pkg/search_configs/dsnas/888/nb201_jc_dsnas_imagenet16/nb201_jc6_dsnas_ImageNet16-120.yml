@@ -1,0 +1,83 @@
+output: nb201_jc6_dsnas_ImageNet16-120
+disable_tdqm: True
+fast: False
+
+dataset: ImageNet16-120
+seed: 888
+multi-gpu: False
+test: False
+profiling: False
+
+base_config:
+  network:
+    name: NetworkRP
+    config:
+      C : 16
+      N : 5
+      max_nodes : 4
+      space :
+        - none
+        - skip_connect
+        - nor_conv_1x1
+        - nor_conv_3x3
+        - avg_pool_3x3
+      affine : False
+      track_running_stats : True
+      forward_samples: 5
+      independence: True
+  optimizer: 
+    name: SGD
+    config:
+      lr: 0.025
+      momentum: 0.9
+      weight_decay: 3.0e-4
+      nesterov: True
+  scheduler: 
+    name: CosineAnnealingLR
+    config:
+      T_max: 50
+      eta_min: 0.001
+  loss:
+    name: cross_entropy
+    config:
+      label_smoothing: 0
+
+  architecture:
+    name: SamplingArchitecture
+    config:
+      optimizer:
+        name: Adam
+        config:
+          lr: 0.0003
+          betas:
+            - 0.5
+            - 0.999
+          weight_decay: 0.001
+      loss:
+        name: cross_entropy
+        config:
+          label_smoothing: 0
+      second_order: False
+      train_or_valid: valid
+      threshold: 0.8
+      method: _reinforce_loo
+
+default:  
+  arch: [[1.0, 1.0, 0.0, 0.0, 1.0], [1.0, 1.0, 0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 1.0, 0.0], [1.0, 1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0, 1.0]]
+  dataloader: # dataloader for every stage
+    subset: 1
+    valid_split: 0.5
+    workers: 4
+    batch_size: 64
+
+warmup:
+  
+splitting:
+
+training:
+  epochs: 50
+  dataloader:
+    subset: 1
+    valid_split: 0.5
+    workers: 4
+    batch_size: 64

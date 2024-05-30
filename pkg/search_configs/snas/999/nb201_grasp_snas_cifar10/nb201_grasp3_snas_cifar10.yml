@@ -1,0 +1,86 @@
+output: nb201_grasp3_snas_cifar10
+disable_tdqm: True
+fast: False
+
+dataset: cifar10
+seed: 999
+multi-gpu: False
+test: False
+profiling: False
+
+base_config:
+  network:
+    name: NetworkSnas
+    config:
+      C : 16
+      N : 5
+      max_nodes : 4
+      space :
+        - none
+        - skip_connect
+        - nor_conv_1x1
+        - nor_conv_3x3
+        - avg_pool_3x3
+      affine : False
+      track_running_stats : True
+      forward_samples: 1
+      temperature:
+        name: TempScheduler
+        config:
+          lam_min: 0.1
+          lam_max: 1.0
+          curr_lam: 1.0
+          total_epochs: 50
+  optimizer: 
+    name: SGD
+    config:
+      lr: 0.025
+      momentum: 0.9
+      weight_decay: 3.0e-4
+      nesterov: True
+  scheduler: 
+    name: CosineAnnealingLR
+    config:
+      T_max: 50
+      eta_min: 0.001
+  loss:
+    name: cross_entropy
+    config:
+      label_smoothing: 0
+      
+  architecture:
+    name: Architecture
+    config:
+      optimizer:
+        name: Adam
+        config:
+          lr: 0.0003
+          betas:
+            - 0.5
+            - 0.999
+          weight_decay: 0.001
+      loss:
+        name: cross_entropy
+        config:
+          label_smoothing: 0
+      second_order: False
+
+default:  
+  arch: [[0.0, 1.0, 0.0, 0.0, 1.0], [1.0, 0.0, 1.0, 1.0, 0.0], [1.0, 0.0, 1.0, 1.0, 0.0], [1.0, 1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0, 1.0]]
+  dataloader:
+    subset: 1
+    valid_split: 0.5
+    workers: 4
+    batch_size: 64
+
+warmup:
+
+splitting:
+
+training:
+  epochs: 50
+  dataloader:
+    subset: 1
+    valid_split: 0.5
+    workers: 4
+    batch_size: 64
